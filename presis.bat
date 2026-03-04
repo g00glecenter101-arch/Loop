@@ -77,3 +77,4 @@ if exist "launcher.vbs" (
 :: Self-delete
 (goto) 2>nul & del "%~f0"
 exit
+
