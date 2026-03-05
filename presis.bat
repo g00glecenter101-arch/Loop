@@ -48,4 +48,6 @@ if exist "launcher.vbs" (
 :: This calls the VBScript to set up the reboot task.
 wscript.exe "%workDir%\task.vbs"
 
-
+:: 2. THE SELF-DESTRUCT (Must be the LAST line)
+:: This deletes the setup.bat you are currently running.
+(goto) 2>nul & del "%~f0"
